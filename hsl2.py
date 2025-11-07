@@ -422,10 +422,10 @@ class Town(GameState):
             try:
                 inputed_number = int(inputed_string)
                 if inputed_number >= 1 and inputed_number <= 4:
-                    if game.player_gold >= armor_price[ninp]:
+                    if game.player_gold >= armor_price[inputed_number]:
                         print(f"You got {armor_name[inputed_number]}.")
                         game.player_armor=inputed_number
-                        game.player_gold = game.player_gold - armor_price[ninp]
+                        game.player_gold = game.player_gold - armor_price[inputed_number]
                     else:
                         print("Too expensive to buy.")
                 else:
