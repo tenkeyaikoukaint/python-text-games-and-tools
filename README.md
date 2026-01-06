@@ -30,14 +30,18 @@ Text adventure game (Japanese)
 ## Python line editor
 
 ## Advanced Snowball Battle(strategic simulation/Japanese)
+snowball battle with castle attack-flavor
 
 ## Lining shoot (needs pygame)
+clear blocks with arrange line
 
 ## python mml to wav editor
 
 ## python morse code wav writer
 
 ## Python tiny japanese environment for airgap
+It can use hiragana and katakana
+
 
 ## Python quiz game framework
 
