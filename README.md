@@ -31,7 +31,7 @@ Text adventure game (Japanese)
 
 ## Advanced Snowball Battle(strategic simulation/Japanese)
 
-## lINING shoot (needs pygame)
+## Lining shoot (needs pygame)
 
 ## python mml to wav editor
 
