@@ -27,5 +27,14 @@ Text based adventure game like RPG
 ## One Room Adventure
 Text adventure game (Japanese)
 
+## Python line editor
+
+## Advanced Snowball Battle(strategic simulation/Japanese)
+
+## lINING shoot (needs pygame)
+
+## python mml to wav editor
+
+## python morse code wav writer
 ## ポンポン船アドベンチャー(Adventure of the pop pop boat)
 text based adventure game with number choice (Japanese)
