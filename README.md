@@ -36,13 +36,15 @@ Text adventure game (Japanese)
 ## python mml to wav editor
 
 ## python morse code wav writer
-## ポンポン
 
 ## Python tiny japanese environment for airgap
 
 ## Python quiz game framework
 
 
+## Adventure of the pop pop boatext based adventure game with number choice (Japanese)
 
-船アドベンチャー(Adventure of the pop pop boatext based adventure game with number choice (Japanese)
-##
+
+## Bistro simulation from Frazer management simulation games by J.Ronald Frazer
+ 
+
