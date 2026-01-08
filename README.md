@@ -35,18 +35,18 @@ snowball battle with castle attack-flavor
 ## Lining shoot (needs pygame)
 clear blocks with arrange line
 
-## python mml to wav editor
+## Python mml to wav editor
 
-## python morse code wav writer
+## Python morse code wav writer
 
-## Python tiny japanese environment for airgap
+## Python tiny Japanese environment for airgap
 It can use hiragana and katakana
 
 
 ## Python quiz game framework
 
 
-## Adventure of the pop pop boatext based adventure game with number choice (Japanese)
+## Adventure of the pop pop boat a text based adventure game with number choice (Japanese)
 
 
 ## Bistro simulation from Frazer management simulation games by J.Ronald Frazer
