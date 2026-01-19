@@ -30,7 +30,7 @@ Text adventure game (Japanese)
 ## Python line editor
 
 ## Advanced Snowball Battle(strategic simulation/Japanese)
-snowball battle with castle attack-flavor
+snowball battle with castle attack-flavor<br />
 snowbattle.py : implemented by Gemini Pro with snoball_prompt.txt
 snowbattle2.py : implemented by Gemini Flash with the same prompt
 
