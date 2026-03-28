@@ -61,18 +61,27 @@ class AdvancedSnowballFight:
             print("\n" + "-"*60)
             print(f"【 ターン {turn} 】")
             
-            # 状況表示
+            # --- バランス調整: 壁がある間はお互い命中率ダウン ---
+            # これがないと敵50人のステージ3で即死するため
             wall_status = "崩壊" if wall_curr <= 0 else f"耐久{wall_curr}"
-            wall_penalty_msg = " (命中率激減中)" if wall_curr > 0 else " (命中率MAX!)"
+            
+            base_acc = 0.3 # 敵の基本命中率
+            if wall_curr > 0:
+                enemy_acc_curr = 0.15 # 壁がある間は敵も当てにくい(視界不良)
+                wall_msg = " (双方視界不良 / 命中ダウン)"
+            else:
+                enemy_acc_curr = base_acc
+                wall_msg = " (総力戦！)"
+
             print(f" 自軍: {self.troops}人 | ❄️ 雪玉: {self.snowballs}個")
-            print(f" 敵軍: {enemy_curr}/{enemy_max}人 | 🧱 城壁: {wall_status}{wall_penalty_msg}")
+            print(f" 敵軍: {enemy_curr}/{enemy_max}人 | 🧱 城壁: {wall_status}{wall_msg}")
             print("-" * 60)
 
             # --- 1. アサイン入力 ---
             alloc = {}
             remaining = self.troops
             
-            # 重要な役割から順に入力
+            # 入力処理（変更なし）
             input_order = ["maker", "ram", "sling", "tower"]
             for r in input_order:
                 if remaining > 0:
@@ -81,8 +90,6 @@ class AdvancedSnowballFight:
                     remaining -= count
                 else:
                     alloc[r] = 0
-            
-            # 残りは通常攻撃
             alloc["normal"] = remaining
             if remaining > 0:
                 print(f"  通常攻撃 [雪玉1 (基本)] に残り {remaining} 人を配置しました。")
@@ -92,62 +99,57 @@ class AdvancedSnowballFight:
 
             # --- 2. 自軍アクション ---
             
-            # 玉つくり
+            # 先に雪玉製造
             made = alloc["maker"] * 3
             self.snowballs += made
             if alloc["maker"] > 0:
                 print(f"📦 玉つくり部隊が雪玉を {made} 個製造 (在庫: {self.snowballs})")
 
-            # 壁の状態による命中補正
-            # 壁がある場合、通常・スリングの命中率は0.2倍まで落ちる
-            wall_factor = 0.2 if wall_curr > 0 else 1.0
-            
-            total_hits = 0
+            # 【修正点A】ラム（壁破壊）を先に実行する
+            # これにより、同じターン内に壁が壊れれば、即座に射撃部隊の命中率が上がる
             ram_dmg = 0
+            if alloc["ram"] > 0:
+                for _ in range(alloc["ram"]):
+                    if random.random() < 0.6: ram_dmg += 15
+                
+                if ram_dmg > 0:
+                    wall_curr = max(0, wall_curr - ram_dmg)
+                    print(f"🐏 ラム部隊が城壁を破壊！ {ram_dmg} ダメージを与えた！")
+                    if wall_curr == 0:
+                        print("💥 敵の城壁が完全に崩壊した！ 敵は丸裸だ！")
 
-            # 攻撃処理順序
-            action_order = ["tower", "sling", "normal", "ram"]
+            # 攻撃処理
+            wall_factor = 0.2 if wall_curr > 0 else 1.0
+            total_hits = 0
             
-            for role in action_order:
+            # 射撃部隊の処理
+            shooters = ["tower", "sling", "normal"]
+            for role in shooters:
                 count = alloc[role]
                 if count == 0: continue
                 
                 conf = self.roles_config[role]
-                
-                # ラムの処理（対壁ダメージ）
-                if role == "ram":
-                    # ラムは雪玉消費なし
-                    hits = 0
-                    for _ in range(count):
-                        # 60%で成功、壁に15ダメージ
-                        if random.random() < 0.6:
-                            ram_dmg += 15
-                    continue # ラムは対人攻撃しない
-
-                # 射撃部隊の処理
                 cost = conf["cost"]
                 needed = count * cost
-                actual_shooters = count
                 
+                # 雪玉不足チェック
+                actual_shooters = count
                 if self.snowballs < needed:
                     actual_shooters = self.snowballs // cost if cost > 0 else 0
                     self.snowballs = 0
                     print(f"⚠️ {conf['name']}部隊: 雪玉不足で {count - actual_shooters} 人が攻撃不能！")
                 else:
                     self.snowballs -= needed
-
-                # 命中判定
-                role_hits = 0
-                hit_prob = conf["acc"]
                 
-                # 壁補正の適用
+                # 命中判定
+                hit_prob = conf["acc"]
                 if role == "tower":
-                    # やぐらは壁の影響を半分しか受けない（有利）
-                    effective_factor = wall_factor + (1.0 - wall_factor) * 0.6
-                    hit_prob *= effective_factor
+                    # やぐらは壁の影響を軽減
+                    hit_prob *= (wall_factor + (1.0 - wall_factor) * 0.6)
                 else:
                     hit_prob *= wall_factor
 
+                role_hits = 0
                 for _ in range(actual_shooters):
                     if random.random() < hit_prob:
                         role_hits += 1
@@ -156,68 +158,46 @@ class AdvancedSnowballFight:
                     print(f"⚔️ {conf['name']}部隊: {role_hits} 人の敵に命中！")
                     total_hits += role_hits
 
-            # ダメージ適用
-            if ram_dmg > 0:
-                wall_curr = max(0, wall_curr - ram_dmg)
-                print(f"🐏 ラム部隊が城壁を破壊！ {ram_dmg} ダメージを与えた！")
-                if wall_curr == 0:
-                    print("💥 敵の城壁が完全に崩壊した！ 敵は丸裸だ！")
-            
             enemy_curr = max(0, enemy_curr - total_hits)
-
             if enemy_curr == 0:
-                return True, self.troops # 勝利
+                return True, self.troops
 
-            # --- 3. 敵の反撃 ---
+            # --- 3. 敵の反撃（バグ修正版） ---
             print("\n🔻 敵の反撃 🔻")
             time.sleep(0.5)
             
-            # 敵の命中率（固定+ランダム）
-            enemy_acc = 0.3
             enemy_hits = 0
-            
-            # 敵の攻撃回数は残存人数分
             for _ in range(enemy_curr):
-                if random.random() < enemy_acc:
+                if random.random() < enemy_acc_curr:
                     enemy_hits += 1
             
             if enemy_hits > 0:
                 print(f"敵の雪玉が {enemy_hits} 発飛んできた！")
                 
-                # 被弾割り当て（ヘイトシステム）
-                # 現在のアサイン状況から、被弾確率の重み付けリストを作成
-                casualty_candidates = []
-                weights = []
-                
-                for r, count in alloc.items():
-                    if count > 0:
-                        casualty_candidates.append(r)
-                        # 重み = 人数 * ヘイト値
-                        # つまり「ラム」は人数が少なくても当たりやすい
-                        weights.append(count * self.roles_config[r]["aggro"])
-                
                 dead_log = {r: 0 for r in self.roles_config}
-                total_dead = 0
                 
-                # 命中数分だけループして誰かを脱落させる
+                # 【修正点B】1発ごとに生存者を確認してターゲットを再計算
+                # これにより「死体ガード」を防ぐ
                 for _ in range(enemy_hits):
-                    if self.troops <= 0 or not casualty_candidates: break
+                    if self.troops <= 0: break
                     
-                    # 重み付き抽選
-                    hit_role = random.choices(casualty_candidates, weights=weights, k=1)[0]
+                    # 生存しているロールのみを候補にする
+                    candidates = []
+                    weights = []
+                    for r, count in alloc.items():
+                        if count > 0:
+                            candidates.append(r)
+                            # 重み = 人数 * ヘイト
+                            weights.append(count * self.roles_config[r]["aggro"])
+
+                    if not candidates: break
+
+                    hit_role = random.choices(candidates, weights=weights, k=1)[0]
                     
-                    # そのロールの人数を減らす
-                    if alloc[hit_role] > 0:
-                        alloc[hit_role] -= 1
-                        dead_log[hit_role] += 1
-                        self.troops -= 1
-                        total_dead += 1
-                        
-                        # 重みの更新（厳密には毎回再計算すべきだが簡易的に調整）
-                        # リストの再作成はコストがかかるが、正確性のためここでは簡易処理で続行
-                        # ※本来はweightsの該当インデックスを減らす処理が必要
+                    alloc[hit_role] -= 1
+                    dead_log[hit_role] += 1
+                    self.troops -= 1
                 
-                # 被害報告
                 for r, count in dead_log.items():
                     if count > 0:
                         msg = f"💀 {self.roles_config[r]['name']}が {count} 名脱落..."
@@ -229,7 +209,7 @@ class AdvancedSnowballFight:
 
             turn += 1
 
-        return False, self.troops # 敗北
+        return False, self.troops
 
     def run(self):
         self.print_slow("\n❄️ 戦略シミュレーション：アドバンスド雪合戦 ❄️")
@@ -272,3 +252,4 @@ class AdvancedSnowballFight:
 if __name__ == "__main__":
     game = AdvancedSnowballFight()
     game.run()
+inp = input("Hit ENTER key to exit : ")
