@@ -411,7 +411,7 @@ def main():
             print("No save found. Starting new.")
             time.sleep(1)
     
-    while game.is_game_run:
+    while game.is_running:
         game.game_state.draw_ui(game)
         if isinstance(game.game_state, Maze):
             print("Move(n/s/e/w) | Save(g)")
