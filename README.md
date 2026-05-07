@@ -53,5 +53,7 @@ It can use hiragana and katakana
 
 
 ## Bistro simulation from Frazer management simulation games by J.Ronald Frazer
+
+## If statement and mathmatics(new)
  
 
