@@ -1,0 +1,704 @@
+if文（パターンマッチ）の数学モデルの構成における
+グロモフの双曲線群の利用
+序論：プログラム構造の幾何学的転回
+コンピュータ科学における制御フローの解析、
+特にif文やパターンマッチングといった条件分岐構造の数学的モデル化は、
+長らく離散数学や形式論理学の範疇に留まってきた。
+しかし、ソフトウェアシステムの規模が指数関数的に増大し、
+機械学習によるコード理解や自動推論が求められる現代において、
+従来のグラフ理論的なアプローチだけでは、
+プログラムの持つ深い階層性や動的な複雑さを十分に捉えきれない
+という限界が顕在化している。こうした背景の中、
+ミハイル・グロモフ（Mikhail Gromov）が1987年に提唱した
+「幾何学的群論（Geometric Group Theory）」、
+とりわけ「双曲線群（Hyperbolic Groups）」の概念が、
+プログラム意味論の分野に劇的なパラダイムシフトをもたらしている 。   
+
+グロモフの双曲線群は、有限提示群をそのケイリーグラフ（Cayley graph）
+というメトリック空間として扱い、その大規模な幾何学的性質を「負の曲率」
+という概念で抽象化したものである 。この理論は、抽象的な代数構造に
+メトリック（距離）を導入し、それを幾何学的な対象として分析することを可能にする。
+if文やパターンマッチングの連鎖によって構成されるプログラムの実行パスは、
+幾何学的には決定木（Decision Tree）や抽象構文木（AST）といった
+木構造として表現される。ユークリッド空間（R 
+n
+ ）が木構造を埋め込む際に大きな歪み（distortion）を生じさせるのに対し、
+双曲線空間はその指数関数的なボリューム増大特性により、
+木構造を事実上歪みなく表現できるという「自然な」特性を備えている 。   
+
+本報告書では、if文の論理的構造を双曲線群の幾何学的な枠組みへと
+マッピングする数学的手法について詳述する。これは単なる比喩ではなく、
+語の問題（Word Problem）の計算量理論、線形等周不等式によるパスの短縮、
+および積多様体上の決定木アルゴリズムといった、
+厳密な数学的基盤に基づく構成である 。   
+
+幾何学的群論と双曲性の基礎
+グロモフの双曲線群を理解するための出発点は、
+メトリック空間としての群の定義にある。有限生成集合 S を持つ群 G に対して、
+そのケイリーグラフ Γ(G,S) は、群の各要素を頂点とし、
+ある要素 g に生成元 s∈S を乗じて得られる要素 gs との間にエッジを張ることで構成される。
+このグラフに各エッジの長さを1とする語メトリック（word metric） d 
+S
+​
+  を導入すると、群自体が一つの測地的メトリック空間となる 。   
+
+δ-双曲性の数学的定式化
+測地的空間 X が δ-双曲的であるとは、任意の測地的三角形 Δ(x,y,z) において、
+一辺が他の二辺の δ-近傍に含まれることを指す 。
+これを「スリムな三角形（slim triangles）」の条件と呼ぶ。
+この定義は、リーマン幾何学における負の曲率の概念を、
+微分可能性を必要としない離散的な空間へと一般化したものである 。   
+
+if文のモデル化において重要なのは、完全な木構造が 0-双曲的（δ=0）であるという事実である。
+if文のネストが深くなるにつれ、その制御フローグラフは幾何学的には理想的な双曲空間の
+「測地線」に近い振る舞いを見せる。グロモフ積を用いた次の不等式は、
+空間の階層性を定量化する上で決定的な役割を果たす ：   
+
+(x∣y) 
+w
+​
+ = 
+2
+1
+​
+ (d(w,x)+d(w,y)−d(x,y))
+この積は、基点 w から見た x と y の「共通の祖先」までの距離に相当する。
+プログラムのパターンマッチングにおいて、二つの異なる実行パスがどの時点で
+分岐したかを特定するプロセスは、まさにこの幾何学的なグロモフ積の計算に他ならない 。   
+
+曲率とボリューム増大の比較
+if文の階層構造を多次元の数値空間に配置する場合、
+ユークリッド空間と双曲空間では収容可能な「情報密度」が決定的に異なる。
+ユークリッド空間のボリュームは半径のベキ乗でしか増大しないが、
+双曲空間（および双曲線群のケイリーグラフ）は指数関数的に増大する 。   
+
+特性	ユークリッド空間 (E 
+n
+ )	双曲空間 (H 
+n
+ )	球面空間 (S 
+n
+ )
+曲率 K	K=0	K<0	K>0
+ボリューム増大	多項式的 (r 
+n
+ )	指数関数的 (e 
+r
+ )	有界
+木構造の埋め込み	高歪み	低歪み	不可能
+if文の対応	線形・並列処理	階層的・分岐処理	循環・ループ処理
+   
+
+この特性により、数千もの分岐を持つ複雑なパターンマッチング・プログラムを、
+比較的低次元の双曲空間内に、構造的な矛盾（重なりや歪み）を
+最小限に抑えて配置することが可能となる 。   
+
+if文の実行と「語の問題」の計算量
+if文の実行プロセスを、群の生成元の系列としてモデル化すると、
+特定のパターンの充足可能性判定は、群論における「語の問題（Word Problem）」として記述できる。
+すなわち、与えられた条件の系列 s 
+1
+​
+ s 
+2
+​
+ …s 
+n
+​
+  が、最終的に特定のプログラム状態（群の要素）に到達するかどうかを判定する問題である 。   
+
+デーンのアルゴリズムと線形等周不等式
+双曲線群の最も顕著な計算論的特徴は、その語の問題がデーンのアルゴリズムによって
+極めて効率的に解けることである 。グロモフは、有限提示群が双曲的であることと、
+そのデーン関数（等周関数）が線形であることを同値とした 。   
+
+等周不等式とは、ループの長さ L に対して、そのループを張るディスクの面積 Area が
+どのように制限されるかを示す 。双曲線群においては、次の線形関係が成立する ：   
+
+Area(γ)≤C⋅Length(γ)
+これは、プログラムの実行パス（語）の中に「冗長なif文のネスト」や
+「打ち消し合う条件」が含まれている場合、それを短縮するステップ数が
+パスの長さに比例することを保証する。さらに、デレク・ホルト（Derek Holt）らの研究により、
+すべての双曲群における語の問題は、多テープ・チューリングマシン上で
+実時間（real-time）で認識可能であることが証明されている 。   
+
+実時間認識のプログラム意味論的意義
+実時間認識可能であるということは、入力文字（if文の各条件）を
+読み込むごとに一定の上限時間内に計算を完了でき、入力の終わりと同時に
+パターンマッチングの結果が得られることを意味する 。
+これは、コンパイラの最適化やハードウェアレベルでの分岐予測において、
+極めて高いスループットを維持しながら論理的な整合性を検証できることを数学的に裏付けている。   
+
+群のクラス	語の問題の計算量	等周不等式の型	プログラムモデルの複雑さ
+有限群	ほぼ線形	定数	静的な分岐
+双曲群	実時間 / 線形	線形	階層的なif-else
+自動群 (Automatic)	二次時間 (n 
+2
+ )	二次	ループを伴う制御フロー
+SL(3, Z)	指数 / 決定不能	指数	並行・競合プロセス
+   
+
+アイザック・メックラーの対応辞書：分岐プログラムと群の成長
+プログラムの論理的な「深さ」と、群の「成長」を直接結びつけたのが、
+アイザック・メックラー（Izaak Meckler）の
+「分岐プログラムの等一化（Branching Program Uniformization）」に関する研究である 。
+メックラーは、読み切り忘却型分岐プログラム（roOBP）の
+最小幅 W(n) と、対応する群の成長関数 ρ(n) が、
+実質的に同じ増大率を持つことを示した 。   
+
+多項式成長とベキ零性の影響
+グロモフの多項式成長定理は、ある群が多項式的な成長率を持つならば、
+それは「仮想的にベキ零（virtually nilpotent）」であることを結論づける 。
+メックラーはこの幾何学的な定理を、計算複雑性理論の文脈で再解釈した。
+もし、あるif文のパターンマッチングが多項式サイズのroOBPで表現できるならば、
+その背後にある代数構造はベキ零群的であり、
+したがって一様な線形時間アルゴリズム（多テープ・チューリングマシン上）で
+実行可能であるという「一等一化定理（Uniformization Theorem）」を導き出したのである 。   
+
+この洞察は、プログラムの構造的複雑さを、単なるステップ数ではなく
+「空間の曲率」や「群の成長率」として測定できることを示している。
+双曲群は指数関数的な成長を持つため、そのパターンマッチングは
+ベキ零群よりもはるかに広大で複雑な「表現力」を持つが、
+前述の通り線形等周不等式によって効率的な探索が維持される。
+
+双曲決定木の構成と角度的定式化
+if文の階層的な意思決定をモデル化する上で、
+決定木（Decision Tree, DT）は最も直感的な形式である。
+しかし、従来の決定木はユークリッド空間上の超平面分割に依存しており、
+これは空間のグローバルな曲率特性を無視している 。
+グロモフ双曲性を真に活用するためには、非ユークリッド多様体上での
+「測地凸（geodesically convex）」な分割が必要となる 。   
+
+角度による空間分割のメカニズム
+最新の研究（Chlenski et al., 2025）は、双曲空間 H 
+D,K
+  における分割を、二次元部分空間への投影と、そこでの「角度」を用いた
+定式化（Angular Reformulation）によって解決した 。   
+
+双曲ミッドポイント角度 m 
+H
+​
+ (u,v) の計算プロセスは、if文の分岐境界を定義する。2つのデータ点 u,v をミンコフスキー内積 ⟨x,y⟩ 
+L
+​
+ =−x 
+0
+​
+ y 
+0
+​
+ +∑ 
+i=1
+n
+​
+ x 
+i
+​
+ y 
+i
+​
+  を用いて扱うローレンツ・モデル（Lorentz model）において、分割境界は次のように算出される ：   
+
+データを2次元平面上の双曲線に投影し、基点からの角度 θ 
+u
+​
+ ,θ 
+v
+​
+  を求める。
+
+双曲幾何学特有の補助変数 V を計算する：
+
+V:= 
+sin(θ 
+u
+​
+ +θ 
+v
+​
+ )sin(θ 
+v
+​
+ −θ 
+u
+​
+ )
+sin(2θ 
+u
+​
+ −2θ 
+v
+​
+ )
+​
+ 
+条件分岐の閾値を設定する：θ 
+u
+​
+ +θ 
+v
+​
+ <π ならば m 
+H
+​
+ =cot 
+−1
+ (V− 
+V 
+2
+ −1
+
+​
+ )、そうでなければ m 
+H
+​
+ =cot 
+−1
+ (V+ 
+V 
+2
+ −1
+
+​
+ )。
+
+この「角度ベース」の分割は、分割後の領域（リーフノード）が
+常に幾何学的に連結かつ凸であることを保証する。
+これは、プログラムの論理的な「if (cond) {... }」が、状態空間を断片化させることなく、
+トポロジー的に健全な形で切り分けることに対応する 。   
+
+積多様体（Product Manifolds）による不均一曲率の統合
+現実世界のコードは、純粋な木構造だけでなく、循環的なロジック（ループ）や
+線形な実行パス（シーケンシャル処理）を併せ持っている。
+これを反映するために、双曲空間（階層用）、超球面空間（循環用）、
+ユークリッド空間（線形用）のデカルト積からなる「積多様体」上での決定木が構成される ：   
+
+M=H 
+d 
+h
+​
+ ,K 
+h
+​
+ 
+ ×S 
+d 
+s
+​
+ ,K 
+s
+​
+ 
+ ×E 
+d 
+e
+​
+ 
+ 
+このモデルでは、if文の各条件がいずれかの成分空間における角度分割に対応し、
+コードの多面的な幾何学的性質を同時にエンコードする。
+
+双曲関数埋め込み (HFE) とソースコード・マイニング
+if文やパターンマッチングの対象となる最小単位はしばしば関数である。
+関数間の呼び出し関係（Call Relationship）を
+双曲幾何学的にモデル化する手法として、
+「双曲関数埋め込み（Hyperbolic Function Embedding, HFE）」が提案されている 。   
+
+リッチ曲率による階層性の自己組織化
+ソースコードから構築された関数呼び出しグラフ（FCG）が
+なぜ双曲空間に埋め込まれるべきか、その客観的な証拠として
+「リッチ曲率（Ricci curvature）」の解析が用いられる 。
+FCGの各エッジに対してリッチ曲率を計算すると、
+その大部分が負の値を示す。これは、コードの呼び出し構造が、
+局所的なユークリッド幾何学を破り、指数関数的な広がりを持つ
+「双曲的な芯」を持っていることを示唆している 。   
+
+HFEの構成アルゴリズム：
+
+RC-FCGの構築: ソースコードからFCGを作成し、
+各エッジの重みを呼び出し頻度から計算した後、
+それをリッチ曲率情報で補正した「RC-FCG」へと変換する 。   
+
+ポアンカレ球モデルへの配置: ポアンカレ球 B 
+d
+  の原点を木構造の「ルート（根）」とし、埋め込みベクトル u の
+ノルム ∥u∥ が1（境界）に近づくほど、その関数は階層の末端にあると見なす 。   
+
+距離学習: 学習の目的関数は、呼び出し関係にある関数間の双曲距離 d 
+h
+​
+ (u,v) を縮小させ、無関係な関数間を遠ざけるように作用する。
+
+ポアンカレ空間における距離の定義：
+
+d 
+h
+​
+ (u,v)=acosh(1+2 
+(1−∥u∥ 
+2
+ )(1−∥v∥ 
+2
+ )
+∥u−v∥ 
+2
+ 
+​
+ )
+この式から明らかなように、境界付近（ノルムが1に近い領域）では
+分母がゼロに近づくため、微小なユークリッド距離の差が、
+極大化された双曲距離へと変換される。これにより、if文によって
+細分化されたパターンの微細な違いを、高精度に識別することが可能となる 。   
+
+双曲境界と実行パスの極限
+グロモフの理論のもう一つの柱は、双曲空間をコンパクト化して得られる
+「グロモフ境界（Gromov boundary）」 ∂X である 。これは、
+無限に続く測地的半直線の「到達点」であり、プログラムの文脈では
+無限ループや、停止しない（liveness）計算プロセスの極限状態を表現する 。   
+
+北極-南極動態とパターンの収束
+双曲境界上での群の作用は、しばしば「北極-南極動態（north-south dynamics）」と
+呼ばれる特性を示す。これは、ある双曲的な変換（if文の実行ステップに対応）を
+繰り返すことで、すべての状態が境界上の特定の「吸引点（sink）」へと収束し、
+逆の操作が「反発点（source）」から遠ざかる現象を指す 。   
+
+パターンマッチング・オートマトンにおいて、特定の複雑な条件分岐が、
+どのような入力に対しても最終的にある特定のエラー状態や正常終了状態に
+帰着するかを証明する際、この幾何学的な収束性は強力な論拠となる。
+特に、一端を持つ双曲群の境界が Cantor 集合や球面となるトポロジー的性質は、
+プログラムの例外処理の網羅性（coverage）を分類する基準を与える 。   
+
+ビューヒ・オートマトンと安定性
+Snippet  および  が議論するように、双曲境界上の作用は、
+無限語を受理するビューヒ・オートマトン（Büchi automata）の理論と
+密接にリンクしている。特に、「特異点（singular points）」を持たない
+オートマトン群の研究は、if文の条件が微小に変動しても、
+プログラムの長期的な振る舞い（境界への到達点）が連続的に変化することを
+保証する「幾何学的安定性」のモデルを提供する 。   
+
+複雑な語の方程式と形式言語理論
+if文の条件式は、文字列変数 X,Y,Z に対する等式（XY=Z など）として
+記述されることが多い。これらは「語の方程式（Word Equations）」と呼ばれ、
+その可解性はプログラムのパス充足可能性（SAT）問題の核心である 。   
+
+パリク制約とEDT0L言語の階層
+近年の幾何学的群論の研究により、双曲群における方程式の解集合は、
+「EDT0L言語」という、文脈自由言語を拡張した形式言語のクラスに属することが判明している 。   
+
+さらに、変数に含まれる特定の文字の出現回数を制限する
+「パリク制約（Parikh constraints）」を加えた場合でも、
+ねじれのない（torsion-free）双曲群においては、
+解の存在判定がPSPACE（多項式領域）という、
+実用的な時間枠内での決定が可能である 。これは、
+if文の条件が単なる等価性だけでなく、
+「文字列 A の中に文字 'a' が文字 'b' の二倍含まれる」といった高度な
+計数的パターンを含んでいる場合でも、幾何学的な
+「局所再圧縮（local recompression）」アルゴリズムを用いて効率的に処理できることを意味する 。   
+
+アルゴリズムの実装とリソースの最適化
+幾何学的モデルの真価は、その計算効率にある。
+双曲空間を利用したモデルは、従来のユークリッド空間ベースのモデルと比較して、
+極めて高いリソース効率を誇る 。   
+
+次元削減と圧縮効果
+双曲空間の幾何学的な広がりは、高次元のユークリッド空間を
+低次元の双曲空間で「圧縮」して表現することを可能にする 。   
+
+学習モデル	埋め込み空間	次元数 (標準)	分岐判定の歪み
+CodeBERT	ユークリッド (Dense)	768	大 (階層崩壊)
+GraphCodeBERT	ユークリッド (Graph)	128	中
+HFE	双曲 (Poincaré)	64	小
+HypeCodeNet	双曲 (Lorentz)	32	極小
+   
+
+HypeCodeNet（2023年）の研究では、
+ASTの木構造をローレンツ・モデル上で直接学習することで、
+従来のトランスフォーマー・ベースのモデルよりも
+数倍少ないパラメータ数で、コードクローン検出や
+リンク予測において同等以上の性能を達成している 。
+これは、if文やパターンマッチングの論理を、データの「本来の形状」である
+双曲幾何学に合わせることで、無駄な次元を排除できることを示している。   
+
+数値的安定性とリーマン最適化
+一方で、双曲演算には指数・対数関数が頻繁に登場するため、
+コンピュータ上での浮動小数点演算におけるオーバーフローや
+精度の喪失が課題となる 。これを克服するために、以下のような技術が導入されている：   
+
+曲率アニーリング（Curvature Annealing）: 
+学習の初期段階では曲率を低く保ち、徐々に双曲性を強めることで、埋め込みの爆発を防ぐ 。   
+
+マクローリン近似（Maclaurin Approximations）:
+ ローレンツ空間での演算を、多項式近似によって高速化・安定化する 。   
+
+リーマン確率的勾配降下法（RSGD）:
+ 埋め込みベクトルが常に多様体（ノルム <1 の領域）に留まるよう、
+レトラクション（retraction）操作を伴う最適化を行う 。   
+
+今後の展望：神経記号意味論への融合
+if文の幾何学的モデル化の究極の目標は、
+人間の論理的推論（記号的AI）と、ニューラルネットワークのパターン認識（接続主義AI）を
+一つの空間で統合する「Neurosymbolic Semantics（神経記号意味論）」の実現にある 。   
+
+クロスモーダル推論と形式意味論
+最新の研究では、形式論理的な意味論（参照としての意味）と、
+分散表現による分布意味論（使用としての意味）の間に
+準同型（homomorphism）が存在することが証明されつつある 。
+双曲幾何学は、この準同型を具体化する「接着剤」として機能する。
+例えば、視覚的なオブジェクトの階層（画像）と、
+それを記述するif-then形式のルール（テキスト）を、
+共通の双曲空間に埋め込むことで、幾何学的な近傍探索を論理的な
+パターンマッチングとして実行することが可能となる 。   
+
+ソフトウェアの安全性とフォーマル・ベリフィケーション
+プログラムの安全性を保証するための静的解析においても、
+双曲的視点は重要である。制御フローグラフが δ-双曲性から大きく逸脱する
+（すなわち、木構造から外れて異常に複雑な循環を持つ）箇所を自動検出し、
+そこを重点的に形式検証にかけるといった、幾何学的指標に基づくデバッグ手法の開発が
+期待されている。また、デーンのアルゴリズムが提供する語の等価性判定は、
+コンパイラの最適化によってif文の順序を入れ替えたり、
+冗長な分岐を削除したりする際の正当性証明に、揺るぎない数学的基礎を与える 。   
+
+結論
+グロモフの双曲線群を利用したif文およびパターンマッチングの数学モデルは、
+コンピュータ科学における論理と幾何学の深遠な融合を象徴している。
+プログラムの持つ階層的な本質は、双曲空間の「負の曲率」と完璧に一致し、
+低歪みな情報表現と超高速な計算アルゴリズムを同時にもたらした。
+
+デーンのアルゴリズムから導かれる実時間認識可能性は、
+パターンマッチングの実行効率を幾何学的に保証し、
+メックラーによる分岐プログラムと群の成長率の結びつきは、
+計算複雑性の新たな尺度を提示した。
+さらに、積多様体上の決定木や双曲関数埋め込みといった
+具体的な実装技術は、理論上の抽象論を、実社会の巨大なコードベースを
+解析するための強力な武器へと変貌させている。
+
+幾何学的群論という、20世紀末に拓かれた純粋数学のフロンティアは、
+今やプログラム意味論の未来を照らす灯火となっている。
+この幾何学的アプローチは、私たちがソフトウェアを単なる記号の連鎖としてではなく、
+豊かな構造を持つ「曲がった空間」として理解し、
+より安全で効率的なデジタル社会を構築するための不可欠な基盤であり続けるであろう。
+
+
+ams.org
+AMS eBooks: Colloquium Publications - American Mathematical Society
+新しいウィンドウで開く
+
+math.ucdavis.edu
+Geometric Group Theory - UC Davis Math
+新しいウィンドウで開く
+
+en.wikipedia.org
+Geometric group theory - Wikipedia
+新しいウィンドウで開く
+
+en.wikipedia.org
+Hyperbolic group - Wikipedia
+新しいウィンドウで開く
+
+openreview.net
+The Natural Geometry of Code: Hyperbolic Representation Learning for Program Reasoning
+新しいウィンドウで開く
+
+arxiv.org
+Hyperbolic Graph Learning: A Comprehensive Review - arXiv
+新しいウィンドウで開く
+
+arxiv.org
+Uncovering Hierarchical Structure in LLM Embeddings with δ-Hyperbolicity, Ultrametricity, and Neighbor Joining - arXiv
+新しいウィンドウで開く
+
+openaccess.thecvf.com
+HyperVLM: Hyperbolic Space Guided Vision Language Modeling for Hierarchical Multi-Modal Understanding
+新しいウィンドウで開く
+
+eti.uni-siegen.de
+COMPRESSED DECISION PROBLEMS IN HYPERBOLIC GROUPS 1. Introduction 1.1. Background. Suppose that G is a finitely generated group. - Uni Siegen
+新しいウィンドウで開く
+
+raw.githubusercontent.com
+Mixed-Curvature Decision Trees and Random Forests - GitHub
+新しいウィンドウで開く
+
+math.berkeley.edu
+BRANCHING PROGRAM UNIFORMIZATION, REWRITING LOWER BOUNDS, AND GEOMETRIC GROUP THEORY IZAAK MECKLER Mathematics Department U.C. B
+新しいウィンドウで開く
+
+d-nb.info
+Survey on geometric group theory
+新しいウィンドウで開く
+
+arxiv.org
+Hyperbolic groups and local connectivity - arXiv
+新しいウィンドウで開く
+
+mathoverflow.net
+Equivalent definitions of Gromov hyperbolicity - MathOverflow
+新しいウィンドウで開く
+
+people.math.harvard.edu
+Boundaries of hyperbolic groups - Harvard Mathematics Department
+新しいウィンドウで開く
+
+ihes.fr
+HYPERBOLIC GROUPS - M. Gromov - IHES
+新しいウィンドウで開く
+
+faculty.bicmr.pku.edu.cn
+Hyperbolic Groups Lecture Notes
+新しいウィンドウで開く
+
+arxiv.org
+Evaluating LLM Embeddings by 𝛿-Hyperbolicity and Ultrametricity - arXiv
+新しいウィンドウで開く
+
+researchgate.net
+Training-Free Dual Hyperbolic Adapters for Better Cross-Modal Reasoning - ResearchGate
+新しいウィンドウで開く
+
+arxiv.org
+Hyperbolic Large Language Models \fundingThis work was supported by the DOE SEA-CROGS project (DE-SC0023191), AFOSR project (FA9550-24-1-0231). (Corresponding author: ) - arXiv
+新しいウィンドウで開く
+
+mdpi.com
+Hyperbolic Function Embedding: Learning Hierarchical Representation for Functions of Source Code in Hyperbolic Space - MDPI
+新しいウィンドウで開く
+
+proceedings.neurips.cc
+Modeling Heterogeneous Hierarchies with Relation-specific Hyperbolic Cones - NeurIPS
+新しいウィンドウで開く
+
+en.wikipedia.org
+Word problem for groups - Wikipedia
+新しいウィンドウで開く
+
+dokumen.pub
+Geometric group theory, an introduction 116-116-117-1 - DOKUMEN.PUB
+新しいウィンドウで開く
+
+math.rwth-aachen.de
+Automata and Growth Functions for the Triangle Groups - Lehrstuhl für Algebra und Zahlentheorie
+新しいウィンドウで開く
+
+mineyev.web.illinois.edu
+HIGHER DIMENSIONAL ISOPERIMETRIC FUNCTIONS IN HYPERBOLIC GROUPS IGOR MINEYEV Abstract. We introduce the notion of an R-combing a
+新しいウィンドウで開く
+
+pi.math.cornell.edu
+Isoperimetry, volume growth and random walks. - Cornell Mathematics
+新しいウィンドウで開く
+
+en.wikipedia.org
+Isoperimetric inequality - Wikipedia
+新しいウィンドウで開く
+
+sites.math.washington.edu
+Isoperimetric inequality - UW Math Department
+新しいウィンドウで開く
+
+shell.cas.usf.edu
+the isoperimetric inequality via approximation theory and free boundary problems
+新しいウィンドウで開く
+
+math.jhu.edu
+Optimal Isoperimetric Inequalities
+新しいウィンドウで開く
+
+researchgate.net
+(PDF) Compressed decision problems in hyperbolic groups - ResearchGate
+新しいウィンドウで開く
+
+researchgate.net
+Word-Hyperbolic Groups Have Real-Time Word Problem. - ResearchGate
+新しいウィンドウで開く
+
+eti.uni-siegen.de
+Efficient computation in groups via compression
+新しいウィンドウで開く
+
+math.uic.edu
+The quadratic isoperimetric inequality for mapping tori of free group automorphisms. Martin R. Bridson Daniel Groves
+新しいウィンドウで開く
+
+shpilrain.ccny.cuny.edu
+Linear average-case complexity of algorithmic problems in groups - Vladimir Shpilrain
+新しいウィンドウで開く
+
+math.uchicago.edu
+Filling Functions Notes for an advanced course on The Geometry of the Word Problem for Finitely Generated Groups Centre de Recer
+新しいウィンドウで開く
+
+cs.ox.ac.uk
+A Structural Approach to Reversible Computation
+新しいウィンドウで開く
+
+arxiv.org
+arXiv:1107.3645v2 [math.GR] 10 Aug 2011
+新しいウィンドウで開く
+
+arxiv.org
+A Structural Approach to Reversible Computation - arXiv
+新しいウィンドウで開く
+
+semanticscholar.org
+[PDF] Lectures on the Geometric Group Theory | Semantic Scholar
+新しいウィンドウで開く
+
+openreview.net
+Mixed-curvature decision trees and random forests - OpenReview
+新しいウィンドウで開く
+
+proceedings.mlr.press
+Latent Variable Modelling with Hyperbolic Normalizing Flows - Proceedings of Machine Learning Research
+新しいウィンドウで開く
+
+mat.univie.ac.at
+Morse, contracting, and strongly contracting sets with applications to boundaries and growth of groups
+新しいウィンドウで開く
+
+scholarworks.brandeis.edu
+Dynamics and Rigidity of the Morse Boundary A Dissertation Presented to The Faculty of the Graduate School of Arts and - Brandeis ScholarWorks
+新しいウィンドウで開く
+
+arxiv.org
+arXiv:1604.07736v1 [math.GR] 26 Apr 2016
+新しいウィンドウで開く
+
+cambridge.org
+INFINITE STRINGS AND THEIR LARGE SCALE PROPERTIES | The Journal of Symbolic Logic | Cambridge Core
+新しいウィンドウで開く
+
+researchgate.net
+Word equations and the exponent of periodicity | Request PDF - ResearchGate
+新しいウィンドウで開く
+
+arxiv.org
+SLP compression for solutions of equations with constraints in free and hyperbolic groups - arXiv
+新しいウィンドウで開く
+
+worldscientific.com
+SLP compression for solutions of equations with constraints in free and hyperbolic groups | International Journal of Algebra and Computation - World Scientific Publishing
+新しいウィンドウで開く
+
+researchgate.net
+Satisfiability of word equations with constants is in PSPACE | Request PDF - ResearchGate
+新しいウィンドウで開く
+
+dspace.mit.edu
+Fully Hyperbolic Graph Convolutional Neural Networks for Age Prediction with Multi-Modal Brain Data by Hugo Ramirez S.B. Compute - DSpace@MIT
+新しいウィンドウで開く
+
+arxiv.org
+Hierarchical Mamba Meets Hyperbolic Geometry: A New Paradigm for Structured Language Embeddings - arXiv
+新しいウィンドウで開く
+
+minds.wisconsin.edu
+Neurosymbolic semantics
+新しいウィンドウで開く
+
+arxiv.org
+A vector logic for extensional formal semantics - arXiv
+新しいウィンドウで開く
+
+drops.dagstuhl.de
+43rd International Colloquium on Automata, Languages, and Programming (ICALP 2016)
+新しいウィンドウで開く
