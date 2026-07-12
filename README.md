@@ -58,7 +58,7 @@ It can use hiragana and katakana
  
 # Musics(mp3)
 
-All songs are written with Google gemini<br />
+All songs are written with Google Gemini.<br />
 If these songs have legal issue, please teach me:<br />
 https://www.youtube.com/@tenkeyaikoukaint3431<br />
-I am ready to remove illegal songs.
+I am ready to remove songs that have copyright issues.
