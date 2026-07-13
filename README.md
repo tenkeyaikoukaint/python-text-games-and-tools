@@ -54,11 +54,4 @@ It can use hiragana and katakana
 
 ## Bistro simulation from Frazer management simulation games by J.Ronald Frazer
 
-## If statement and mathmatics(new)
- 
-# Musics(mp3)
 
-All songs are written with Google Gemini.<br />
-If these songs have legal issue, please teach me:<br />
-https://www.youtube.com/@tenkeyaikoukaint3431<br />
-I am ready to remove songs that have copyright issues.
