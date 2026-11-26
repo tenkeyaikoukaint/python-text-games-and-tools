@@ -32,8 +32,9 @@ Text adventure game (Japanese)
 ## Advanced Snowball Battle(strategic simulation/Japanese)
 snowball battle with castle attack-flavor<br />
 snowbattle.py : implemented by Gemini Pro with snoball_prompt.txt<br />
-snowbattle2.py : implemented by Gemini Flash with the same prompt
-snowbattle3.py : implemented by Gemini Ultra
+snowbattle2.py : implemented by Gemini Flash with the same prompt<br />
+snowbattle3.py : implemented by Gemini Ultra<br />
+snowbattle6.py : complete version<br />
 
 ## Lining shoot (needs pygame)
 clear blocks with arrange line
